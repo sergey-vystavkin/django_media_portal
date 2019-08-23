@@ -1,0 +1,197 @@
+{% extends 'index.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container">
+    <h1 class="text-center">{{ article.title }}</h1>
+    <hr>
+    <p class="text-center"><img src="{{ article.image.url }}" height="600px" alt=":("></p>
+    <div class="container">
+        <div class="col-sm-12">
+            <div class="col-sm-7 col-sm-offset-2">
+                {{ article.content|safe }}
+                <hr>
+                <h4>Понравилась статья?</h4>
+                <a href="#" id="like"><span style="color: green;"
+                    class="glyphicon glyphicon-thumbs-up"></span>
+                </a>
+                <span id="liked" style="padding-left: 10px;">{{ article.likes }}</span>
+                <a href="#" id="dislike" style="padding-left: 25px;">
+                    <span style="color: red;" class="glyphicon glyphicon-thumbs-down"></span>
+                </a>
+                <span id="disliked" style="padding-left: 10px;">{{ article.dislikes }}</span>
+                <hr>
+                <p class="add_to_favorites-{{ article.slug }}">
+                    {% if current_user %}
+                        {% if article in current_user.favorite_articles.all %}
+                        <button class="btn btn-default disabled">Добавлено в избранное</button>
+                        {% else %}
+                        <a href="#" class="article" data-slug="{{ article.slug }}">
+                            <button class="btn btn-danger">Добавить в избранное</button>
+                        </a>
+                        {% endif %}
+                    {% else %}
+                        <p style="text-decoration: underline; color: darkred;">Вы зашли как администратор, вы не можете добавлять статьи в избранное*</p>
+                    {% endif %}
+                </p>
+                <p class="article_added-{{ article.slug }}"></p>
+                <h2>Комментарии: </h2>
+                <div class="col-sm-12 new_comment">
+
+                </div>
+                {% for comment in article_comments %}
+                <div class="col-sm-12">
+                    <hr>
+                    <small>{{ comment.author.username }}</small>
+                    <p>{{ comment.comment }}</p>
+                    <small>{{ comment.timestamp|date:"Y-m-d" }}</small>
+                </div>
+
+                {% endfor %}
+
+            </div>
+            <div class="col-sm-7 col-sm-offset-2">
+                <hr>
+                <form action="" method="post">
+                    <input type="hidden" id="article" data-id="{{ article.id }}">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <input type="submit" value="Добавить комментарий" id="add_comment"
+                            data-toggle="modal" data-target=".bs-example-modal-sm">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+            <p class="text-center">Ваш коментарий успешно добавлен</p>
+        </div>
+    </div>
+  </div>
+</div>
+{% block jquery %}
+<script>
+    $(document).ready(function(){
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+
+        $('#add_comment').on('click', function(e){
+            e.preventDefault()
+            var article_id = $('#article').attr('data-id')
+            var comment = $('#id_comment').val()
+
+            data = {
+                article_id: article_id,
+                comment: comment,
+                csrfmiddlewaretoken: csrftoken
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '{% url "add_comment" %}',
+                data: data,
+                dataType: "json",
+                success: function(data){
+                    $.each(data, function(field){
+                        $('.new_comment').prepend('<hr><small>'+data[field]['author']+
+                        '</small><p>'+data[field]['comment']+'</p><small>'+
+                        data[field]['timestamp']+'</small>')
+                        $('#id_comment').val('')
+                    })
+                }
+
+            })
+
+        })
+    })
+</script>
+<script>
+    $(document).ready(function(){
+        $('#like').on('click', function(e){
+            e.preventDefault()
+            var like = 'like'
+            var article_id = $('#article').attr('data-id')
+            data = {
+                article_id: article_id,
+                like: like
+            }
+
+            $.ajax({
+                type: "GET",
+                url: "{% url 'user_reaction' %}",
+                dataType: 'json',
+                data: data,
+                success: function(data){
+                    $('#liked').html(data.likes)
+                    $('#disliked').html(data.dislikes)
+                }
+            })
+        })
+    })
+    $(document).ready(function(){
+        $('#dislike').on('click', function(e){
+            e.preventDefault()
+            var dislike = 'dislike'
+            var article_id = $('#article').attr('data-id')
+            data = {
+                article_id: article_id,
+                dislike: dislike
+            }
+
+            $.ajax({
+                type: "GET",
+                url: "{% url 'user_reaction' %}",
+                dataType: 'json',
+                data: data,
+                success: function(data){
+                    $('#liked').html(data.likes)
+                    $('#disliked').html(data.dislikes)
+                }
+            })
+        })
+    })
+</script>
+<script>
+    $(document).ready(function(){
+        $('.article').on('click', function(e){
+            e.preventDefault()
+            var article_slug = $(this).attr('data-slug')
+
+            data = {
+                article_slug: article_slug
+            }
+
+             $.ajax({
+                type: "GET",
+                url: "{% url 'add_to_favorites' %}",
+                dataType: 'json',
+                data: data,
+                success: function(data){
+                    $('.add_to_favorites-'+article_slug).css('display', 'none')
+                    $('.article_added-'+article_slug).html('<button class="btn btn-default disabled">Добавлено в избранное</button>')
+                }
+             })
+        })
+    })
+</script>
+{% endblock jquery %}
+{% endblock content %}
