@@ -1,5 +1,7 @@
 from django.views.generic.list import MultipleObjectMixin
-from .models import Category, Article
+
+from .models import Article, Category
+
 
 class CategoryAndArticlesListMixin(MultipleObjectMixin):
 

@@ -8,23 +8,24 @@
         <div class="col-sm-4">
             <h4><strong>Личная информация</strong></h4>
             <p>Логин: {{ current_user }}</p>
-            <p>Имя: {{ current_user.first_name }}</p>
-            <p>Фамилия: {{ current_user.last_name }}</p>
-            <p>E-mail: {{ current_user.email }}</p>
+            <p>Имя: {{ current_user.user.first_name }}</p>
+            <p>Фамилия: {{ current_user.user.last_name }}</p>
+            <p>E-mail: {{ current_user.user.email }}</p>
         </div>
         <div class="col-sm-8">
             <h4 class="text-center"><strong>Избранные статьи</strong></h4>
             <ul class="button-group">
                 {% for article in current_user.favorite_articles.all %}
-                    <a href="{{ article.get_absolute_url }}" class="remove_from_favorites-{{ article.slug }}"
-                        style="text-decoration: none; color: black;">
-                        <li class="list-group-item remove_from_favorites-{{ article.slug }}" class="remove_from_favorites-{{ article.slug }}">
-                            <p>{{ article.title }}</p>
-                            <a href="#" class="favorite_article" data-slug="{{ article.slug }}">
-                                <p style="color: darkred; padding-left: 450px;">Удалить из избранного</p>
-                            </a>
-                        </li>
-                    </a>
+                <a href="{{ article.get_absolute_url }}" class="remove_from_favorites-{{ article.slug }}"
+                   style="text-decoration: none; color: black;">
+                    <li class="list-group-item remove_from_favorites-{{ article.slug }}"
+                        class="remove_from_favorites-{{ article.slug }}">
+                        <p>{{ article.title }}</p>
+                        <a href="#" class="favorite_article" data-slug="{{ article.slug }}">
+                            <p style="color: darkred; padding-left: 450px;">Удалить из избранного</p>
+                        </a>
+                    </li>
+                </a>
                 {% endfor %}
             </ul>
         </div>
@@ -52,6 +53,7 @@
              })
         })
     })
+
 </script>
 {% endblock jquery %}
 {% endblock content %}

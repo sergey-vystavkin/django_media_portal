@@ -3,13 +3,12 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class CommentForm(forms.Form):
 
+class CommentForm(forms.Form):
     comment = forms.CharField(widget=forms.Textarea)
 
 
 class LoginForm(forms.Form):
-
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
 
@@ -22,14 +21,14 @@ class LoginForm(forms.Form):
         username = self.cleaned_data['username']
         password = self.cleaned_data['password']
         if not User.objects.filter(username=username).exists():
-            raise forms.ValidationError('Пользователь с таким логином не найдено в системе!')
+            raise forms.ValidationError('Пользователь с таким логином'
+                                        ' не найдено в системе!')
         user = User.objects.get(username=username)
         if not user.check_password(password):
             raise forms.ValidationError('Неверный пароль попробуйте еще раз!')
 
 
 class RegistrationForm(forms.ModelForm):
-
     password_check = forms.CharField(widget=forms.PasswordInput)
     password = forms.CharField(widget=forms.PasswordInput)
 
@@ -61,7 +60,8 @@ class RegistrationForm(forms.ModelForm):
         password = self.cleaned_data['password']
         password_check = self.cleaned_data['password_check']
         if User.objects.filter(username=username).exists():
-            raise forms.ValidationError('Пользователь с таким именем уже существует!')
+            raise forms.ValidationError('Пользователь с таким '
+                                        'именем уже существует!')
 
         if password != password_check:
             raise forms.ValidationError('Ваши пароли не совпадают!')

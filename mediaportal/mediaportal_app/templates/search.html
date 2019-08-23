@@ -8,8 +8,8 @@
         <div class="col-sm-12">
             <h3>Найденные результаты: {{ founded_articles.count }}</h3>
             {% for article in founded_articles %}
-                <h4><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></h4>
-                <p>{{ article.content|truncatewords:30 }}</p>
+            <h4><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></h4>
+            <p>{{ article.content|truncatewords:30 }}</p>
             {% endfor %}
         </div>
     </div>

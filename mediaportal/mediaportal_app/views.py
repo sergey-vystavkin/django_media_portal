@@ -1,19 +1,19 @@
-from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.db.models import Q
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
-from django.views.generic.list import ListView
-from django.views.generic.detail import DetailView
-from django.http import JsonResponse, HttpResponseRedirect
 from django.views import View
-from .models import Article, Category, UserAccount
-from .mixins import CategoryAndArticlesListMixin
-from .forms import CommentForm, RegistrationForm, LoginForm
+from django.views.generic.detail import DetailView
+from django.views.generic.list import ListView
 
+from .forms import CommentForm, LoginForm, RegistrationForm
+from .mixins import CategoryAndArticlesListMixin
+from .models import Article, Category, UserAccount
 
 User = get_user_model()
 
-class ArticleListView(ListView):
 
+class ArticleListView(ListView):
     model = Article
     template_name = 'index.html'
 
@@ -24,7 +24,6 @@ class ArticleListView(ListView):
 
 
 class CategoryListView(ListView, CategoryAndArticlesListMixin):
-
     model = Category
     template_name = 'index.html'
 
@@ -38,7 +37,6 @@ class CategoryListView(ListView, CategoryAndArticlesListMixin):
 
 
 class CategoryDetailView(DetailView, CategoryAndArticlesListMixin):
-
     model = Category
     template_name = 'category_detail.html'
     slug_url_kwarg = 'category_slug'
@@ -49,8 +47,8 @@ class CategoryDetailView(DetailView, CategoryAndArticlesListMixin):
         context['articles_from_category'] = self.get_object().article_set.all()
         return context
 
-class ArticleDetailView(DetailView, CategoryAndArticlesListMixin):
 
+class ArticleDetailView(DetailView, CategoryAndArticlesListMixin):
     model = Article
     template_name = 'article_detail.html'
     slug_url_kwarg = 'article_slug'
@@ -61,7 +59,8 @@ class ArticleDetailView(DetailView, CategoryAndArticlesListMixin):
         context['article_comments'] = self.get_object().comments.all()
         context['form'] = CommentForm()
         try:
-            context['current_user'] = UserAccount.objects.get(user=self.request.user)
+            context['current_user'] = UserAccount.objects.get(
+                                        user=self.request.user)
         except:
             context['current_user'] = False
         return context
@@ -79,14 +78,14 @@ class DynamicArticleImageView(View):
 
 
 class CreateCommentView(View):
-
     template_name = 'article_detail.html'
 
     def post(self, request, *args, **kwargs):
         article_id = self.request.POST.get('article_id')
         comment = self.request.POST.get('comment')
         article = Article.objects.get(id=article_id)
-        new_comment = article.comments.create(author=request.user, comment=comment)
+        new_comment = article.comments.create(author=request.user,
+                                              comment=comment)
         comment = [{'author': new_comment.author.username,
                     'comment': new_comment.comment,
                     'timestamp': new_comment.timestamp.strftime('%Y-%m-%d')}]
@@ -94,13 +93,13 @@ class CreateCommentView(View):
 
 
 class DisplayArticlesByCategoryView(View):
-
     template_name = 'index_html'
 
     def get(self, request, *args, **kwargs):
         category_slug = self.request.GET.get('category_slug')
         articles = list(Article.objects.filter(
-            category=Category.objects.get(slug=category_slug)).values('title', 'image', 'slug'))
+            category=Category.objects.get(slug=category_slug)).values(
+                                            'title', 'image', 'slug'))
         data = {
             'articles': articles
         }
@@ -108,7 +107,6 @@ class DisplayArticlesByCategoryView(View):
 
 
 class UserReactionView(View):
-
     template_name = 'article_detail.html'
 
     def get(self, request, *args, **kwargs):
@@ -133,7 +131,6 @@ class UserReactionView(View):
 
 
 class RegistrationView(View):
-
     template_name = 'registration.html'
 
     def get(self, request, *args, **kwargs):
@@ -146,23 +143,18 @@ class RegistrationView(View):
         return render(self.request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
-
         form = RegistrationForm(request.POST or None)
         if form.is_valid():
             new_user = form.save(commit=False)
-            username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             new_user.set_password(password)
-            password_check = form.cleaned_data['password_check']
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            email = form.cleaned_data['email']
             new_user.save()
-            UserAccount.objects.create(user=User.objects.get(username=new_user.username,
-                                                             first_name=new_user.first_name,
-                                                             last_name=new_user.last_name,
-                                                             email=new_user.email,
-                                                             ))
+            UserAccount.objects.create(user=User.objects.get(
+                                        username=new_user.username,
+                                        first_name=new_user.first_name,
+                                        last_name=new_user.last_name,
+                                        email=new_user.email,
+                                        ))
             return HttpResponseRedirect('/')
 
         context = {
@@ -170,8 +162,8 @@ class RegistrationView(View):
         }
         return render(self.request, self.template_name, context)
 
-class LoginView(View):
 
+class LoginView(View):
     template_name = 'login.html'
 
     def get(self, request, *args, **kwargs):
@@ -201,14 +193,14 @@ class LoginView(View):
 
 
 class UserAccountView(View):
-
     template_name = 'user_account.html'
 
     def get(self, request, *args, **kwargs):
         user = self.request.user
         categories = Category.objects.all()
         try:
-            current_user = UserAccount.objects.get(user=User.objects.get(username=user))
+            current_user = UserAccount.objects.get(
+                user=User.objects.get(username=user))
         except:
             current_user = False
         context = {
@@ -219,7 +211,6 @@ class UserAccountView(View):
 
 
 class AddArticleToFavorites(View):
-
     template_name = 'article_detail.html'
 
     def get(self, request, *args, **kwargs):
@@ -232,7 +223,6 @@ class AddArticleToFavorites(View):
 
 
 class RemoveArticleFromFavorites(View):
-
     template_name = 'user_account.html'
 
     def get(self, request, *args, **kwargs):
@@ -245,14 +235,13 @@ class RemoveArticleFromFavorites(View):
 
 
 class SearchView(View):
-
     template_name = 'search.html'
 
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('q')
         categories = Category.objects.all()
         founded_articles = Article.objects.filter(
-            Q(title__icontains=query)|
+            Q(title__icontains=query) |
             Q(content__icontains=query))
         context = {
             'founded_articles': founded_articles,

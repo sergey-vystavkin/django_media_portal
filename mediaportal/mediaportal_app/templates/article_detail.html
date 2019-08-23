@@ -12,7 +12,7 @@
                 <hr>
                 <h4>Понравилась статья?</h4>
                 <a href="#" id="like"><span style="color: green;"
-                    class="glyphicon glyphicon-thumbs-up"></span>
+                                            class="glyphicon glyphicon-thumbs-up"></span>
                 </a>
                 <span id="liked" style="padding-left: 10px;">{{ article.likes }}</span>
                 <a href="#" id="dislike" style="padding-left: 25px;">
@@ -22,16 +22,17 @@
                 <hr>
                 <p class="add_to_favorites-{{ article.slug }}">
                     {% if current_user %}
-                        {% if article in current_user.favorite_articles.all %}
-                        <button class="btn btn-default disabled">Добавлено в избранное</button>
-                        {% else %}
-                        <a href="#" class="article" data-slug="{{ article.slug }}">
-                            <button class="btn btn-danger">Добавить в избранное</button>
-                        </a>
-                        {% endif %}
+                    {% if article in current_user.favorite_articles.all %}
+                    <button class="btn btn-default disabled">Добавлено в избранное</button>
                     {% else %}
-                        <p style="text-decoration: underline; color: darkred;">Вы зашли как администратор, вы не можете добавлять статьи в избранное*</p>
+                    <a href="#" class="article" data-slug="{{ article.slug }}">
+                        <button class="btn btn-danger">Добавить в избранное</button>
+                    </a>
                     {% endif %}
+                    {% else %}
+                <p style="text-decoration: underline; color: darkred;">Вы зашли как администратор, вы не можете
+                    добавлять статьи в избранное*</p>
+                {% endif %}
                 </p>
                 <p class="article_added-{{ article.slug }}"></p>
                 <h2>Комментарии: </h2>
@@ -56,23 +57,24 @@
                     {% csrf_token %}
                     {{ form|crispy }}
                     <input type="submit" value="Добавить комментарий" id="add_comment"
-                            data-toggle="modal" data-target=".bs-example-modal-sm">
+                           data-toggle="modal" data-target=".bs-example-modal-sm">
                 </form>
             </div>
         </div>
     </div>
 </div>
 <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
-  <div class="modal-dialog modal-sm" role="document">
-    <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        </div>
-        <div class="modal-body">
-            <p class="text-center">Ваш коментарий успешно добавлен</p>
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-center">Ваш коментарий успешно добавлен</p>
+            </div>
         </div>
     </div>
-  </div>
 </div>
 {% block jquery %}
 <script>
@@ -123,6 +125,7 @@
 
         })
     })
+
 </script>
 <script>
     $(document).ready(function(){
@@ -169,6 +172,7 @@
             })
         })
     })
+
 </script>
 <script>
     $(document).ready(function(){
@@ -192,6 +196,7 @@
              })
         })
     })
+
 </script>
 {% endblock jquery %}
 {% endblock content %}
