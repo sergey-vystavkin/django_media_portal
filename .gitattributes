@@ -1,3 +1,5 @@
-./mediaportal/static/admin/js/*.js linguist-vendored
-./mediaportal/static/css/*.css linguist-vendored
-./mediaportal/static/js/* linguist-vendored
+static/* linguist-vendored
+static/admin/css/* linguist-vendored
+static/admin/js/* linguist-vendored
+*.css linguist-vendored
+*.js linguist-vendored
