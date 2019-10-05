@@ -10,7 +10,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Django MP</title>
+    <title>Media Portal</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
@@ -61,7 +61,7 @@
                 <li>
                     <form class="navbar-form navbar-left" method="GET" action="{% url 'search_view' %}">
                         <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Введите ключевые слова" name="q">
+                            <input type="text" class="form-control" placeholder="Введите ключевые слова" name="q" required>
                         </div>
                         <button type="submit" class="btn btn-default">Поиск</button>
                     </form>
@@ -92,6 +92,13 @@
     </div>
     <!-- /.container -->
 </nav>
+<style>
+    body a {
+        color: black;
+        font-style: Arial, sans-serif;
+        font-size: 1.2em;
+    }
+</style>
 {% block content %}
 <!-- Page Content -->
 <div class="container">
@@ -180,33 +187,33 @@
         <br>
         <ul class="nav nav-tabs" role="tablist">
             {% for category in categories %}
-            {% if forloop.first %}
-            <li role="presentation" class="active"><a href="{{ category.slug }}"
-                                                      aria-controls="{{ category.slug }}" class="category"
-                                                      data-slug="{{ category.slug }}"
-                                                      role="tab" data-toggle="tab">{{ category.name }}</a></li>
-            {% else %}
-            <li role="presentation"><a href="{{ category.slug }}"
-                                       aria-controls="{{ category.slug }}" class="category"
-                                       data-slug="{{ category.slug }}"
-                                       role="tab" data-toggle="tab">{{ category.name }}</a></li>
-            {% endif %}
+                {% if forloop.first %}
+                    <li role="presentation" class="active">
+                        <a href="{{ category.slug }}" aria-controls="{{ category.slug }}"
+                           class="category" data-slug="{{ category.slug }}" role="tab"
+                           data-toggle="tab">{{ category.name }}</a>
+                    </li>
+                {% else %}
+                    <li role="presentation"><a href="{{ category.slug }}" aria-controls="{{ category.slug }}"
+                       class="category" data-slug="{{ category.slug }}" role="tab" data-toggle="tab">{{ category.name }}</a>
+                    </li>
+                {% endif %}
             {% endfor %}
         </ul>
         <div class="show_articles_by_category">
             {% for article in tab_articles %}
             {% if article.category.slug == 'sport' %}
-            <br>
-            <div class="col-sm-12" style="margin-bottom: 15px;">
-                <div class="col-sm-3">
-                    <img src="{{ article.image.url }}" style="width:150px; height:200px;">
+                <br>
+                <div class="col-sm-12" style="margin-bottom: 15px; padding-bottom:15px; border-bottom: 2px dashed lightgrey;">
+                    <div class="col-sm-3">
+                        <img src="{{ article.image.url }}" style="width:150px; height:200px;">
+                    </div>
+                    <div class="col-sm-5">
+                        <ul style="list-style-type: none;">
+                            <li><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="col-sm-5">
-                    <ul style="list-style-type: none;">
-                        <li><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></li>
-                    </ul>
-                </div>
-            </div>
             {% endif %}
             {% endfor %}
         </div>
@@ -271,7 +278,7 @@
                     success: function(data){
                         $.each(data, function(field){
                             for(i=0; i<=field.length; i++){
-                                $('.show_articles_by_category').append('<br><div class="col-sm-12" style="margin-bottom: 15px;"><div class="col-sm-3">' +
+                                $('.show_articles_by_category').append('<br><div class="col-sm-12" style="margin-bottom: 15px; padding-bottom:15px; border-bottom: 2px dashed lightgrey;"><div class="col-sm-3">' +
                                 '<img src="http://127.0.0.1:8000/media/' + data[field][i]['image'] +
                                 '" style="width:150px; height:200px;"></div>' + '<div class="col-sm-5"><ul style="list-style-type: none;"><li>' +
                                 '<a href="' + category_slug + '/' + data[field][i]['slug'] + '">' + data[field][i]['title'] +

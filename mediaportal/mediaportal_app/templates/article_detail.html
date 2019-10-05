@@ -11,28 +11,31 @@
                 {{ article.content|safe }}
                 <hr>
                 <h4>Понравилась статья?</h4>
-                <a href="#" id="like"><span style="color: green;"
-                                            class="glyphicon glyphicon-thumbs-up"></span>
-                </a>
-                <span id="liked" style="padding-left: 10px;">{{ article.likes }}</span>
-                <a href="#" id="dislike" style="padding-left: 25px;">
-                    <span style="color: red;" class="glyphicon glyphicon-thumbs-down"></span>
-                </a>
-                <span id="disliked" style="padding-left: 10px;">{{ article.dislikes }}</span>
+                    <div class="like-dislike">
+                        <a href="#" id="like">
+                            <span style="color: green;" class="glyphicon glyphicon-thumbs-up"></span>
+                        </a>
+                        <span id="liked" style="padding-left: 10px;">{{ article.likes }}</span>
+                        <a href="#" id="dislike" style="padding-left: 25px;">
+                            <span style="color: red;" class="glyphicon glyphicon-thumbs-down"></span>
+                        </a>
+                        <span id="disliked" style="padding-left: 10px;">{{ article.dislikes }}</span>
+                    </div>
                 <hr>
                 <p class="add_to_favorites-{{ article.slug }}">
                     {% if current_user %}
-                    {% if article in current_user.favorite_articles.all %}
-                    <button class="btn btn-default disabled">Добавлено в избранное</button>
+                        {% if article in current_user.favorite_articles.all %}
+                        <button class="btn btn-default disabled">Добавлено в избранное</button>
+                        {% else %}
+                        <a href="#" class="article" data-slug="{{ article.slug }}">
+                            <button class="btn btn-danger">Добавить в избранное</button>
+                        </a>
+                        {% endif %}
                     {% else %}
-                    <a href="#" class="article" data-slug="{{ article.slug }}">
-                        <button class="btn btn-danger">Добавить в избранное</button>
-                    </a>
+                        <p style="text-decoration: underline; color: darkred; font-size: 0.9em;">
+                            Пожалуйста зарегестрируйтесь, чтобы у Вас была возможность добавить статью в избранное*
+                        </p>
                     {% endif %}
-                    {% else %}
-                <p style="text-decoration: underline; color: darkred;">Вы зашли как администратор, вы не можете
-                    добавлять статьи в избранное*</p>
-                {% endif %}
                 </p>
                 <p class="article_added-{{ article.slug }}"></p>
                 <h2>Комментарии: </h2>
@@ -40,42 +43,33 @@
 
                 </div>
                 {% for comment in article_comments %}
-                <div class="col-sm-12">
-                    <hr>
-                    <small>{{ comment.author.username }}</small>
-                    <p>{{ comment.comment }}</p>
-                    <small>{{ comment.timestamp|date:"Y-m-d" }}</small>
-                </div>
-
+                    <div class="col-sm-12">
+                        <hr>
+                        <small>{{ comment.author.username }}</small>
+                        <p>{{ comment.comment }}</p>
+                        <small>{{ comment.timestamp|date:"Y-m-d" }}</small>
+                    </div>
                 {% endfor %}
-
             </div>
             <div class="col-sm-7 col-sm-offset-2">
                 <hr>
-                <form action="" method="post">
+                <form action="" id="comment-form" method="post">
                     <input type="hidden" id="article" data-id="{{ article.id }}">
                     {% csrf_token %}
                     {{ form|crispy }}
-                    <input type="submit" value="Добавить комментарий" id="add_comment"
-                           data-toggle="modal" data-target=".bs-example-modal-sm">
+                    {% if current_user %}
+                        <input type="submit" value="Добавить комментарий" id="add_comment" class="login"
+                               data-toggle="modal" data-target=".bs-example-modal-sm">
+                    {% else %}
+                        <input type="submit" value="Добавить комментарий" id="add_comment"
+                               data-toggle="modal" data-target=".bs-example-modal-sm">
+                    {% endif %}
                 </form>
             </div>
         </div>
     </div>
 </div>
-<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="text-center">Ваш коментарий успешно добавлен</p>
-            </div>
-        </div>
-    </div>
-</div>
+
 {% block jquery %}
 <script>
     $(document).ready(function(){
@@ -98,31 +92,45 @@
 
         $('#add_comment').on('click', function(e){
             e.preventDefault()
-            var article_id = $('#article').attr('data-id')
-            var comment = $('#id_comment').val()
 
-            data = {
-                article_id: article_id,
-                comment: comment,
-                csrfmiddlewaretoken: csrftoken
-            }
+            if ($('#add_comment').hasClass('login')){
+                var article_id = $('#article').attr('data-id')
+                var comment = $('#id_comment').val()
+                if (comment){
+                    data = {
+                        article_id: article_id,
+                        comment: comment,
+                        csrfmiddlewaretoken: csrftoken
+                    }
 
-            $.ajax({
-                type: "POST",
-                url: '{% url "add_comment" %}',
-                data: data,
-                dataType: "json",
-                success: function(data){
-                    $.each(data, function(field){
-                        $('.new_comment').prepend('<hr><small>'+data[field]['author']+
-                        '</small><p>'+data[field]['comment']+'</p><small>'+
-                        data[field]['timestamp']+'</small>')
-                        $('#id_comment').val('')
+                    $.ajax({
+                        type: "POST",
+                        url: '{% url "add_comment" %}',
+                        data: data,
+                        dataType: "json",
+                        success: function(data){
+                            $.each(data, function(field){
+                                $('.new_comment').prepend('<hr><small>'+data[field]['author']+
+                                '</small><p>'+data[field]['comment']+'</p><small>'+
+                                data[field]['timestamp']+'</small>')
+                                $('#id_comment').val('')
+                            })
+                            if (!$('#comment-form').hasClass('showSuccess')) {
+                                var $successMessage = $('<div class="alert alert-success" role="alert" style="padding: 5px; margin: 10px;">Комментарий успешно добавлен!</div>')
+                                $('#comment-form').after($successMessage)
+                                $('#comment-form').addClass('showSuccess')
+                            }
+                        }
+
                     })
                 }
-
-            })
-
+            } else {
+                if (!$('#add_comment').hasClass('showError')) {
+                        var $loginErrorMessage = $('<div class="alert alert-info" role="alert" style="padding: 5px; margin: 10px;">Чтобы иметь возможность добавить коментарий, нужно зарегестрироваться!</div>')
+                        $('#add_comment').after($loginErrorMessage)
+                        $('#add_comment').addClass('showError')
+                    }
+            }
         })
     })
 
@@ -143,9 +151,25 @@
                 url: "{% url 'user_reaction' %}",
                 dataType: 'json',
                 data: data,
+                error: function(){
+                    if (!$('.like-dislike').hasClass('showError')) {
+                        var $loginErrorMessage = $('<div class="alert alert-info" role="alert" style="padding: 5px; margin: 10px;">Чтобы иметь возможность оценить статью, нужно зарегестрироваться!</div>')
+                        $('.like-dislike').after($loginErrorMessage)
+                        $('.like-dislike').addClass('showError')
+                    }
+                },
                 success: function(data){
-                    $('#liked').html(data.likes)
-                    $('#disliked').html(data.dislikes)
+                    console.log($('#liked').html())
+                    if (!(+$('#liked').html() == data.likes)) {
+                        $('#liked').html(data.likes)
+                        $('#disliked').html(data.dislikes)
+                    } else {
+                        if (!$('.like-dislike').hasClass('showYourReaction')) {
+                            var $loginErrorMessage = $('<div class="alert alert-success" role="alert" style="padding: 5px; margin: 10px;">Вы уже оценили данную статью, спасибо!</div>')
+                            $('.like-dislike').after($loginErrorMessage)
+                            $('.like-dislike').addClass('showYourReaction')
+                        }
+                    }
                 }
             })
         })
@@ -165,9 +189,24 @@
                 url: "{% url 'user_reaction' %}",
                 dataType: 'json',
                 data: data,
+                error: function(){
+                    if (!$('.like-dislike').hasClass('showError')) {
+                        var $loginErrorMessage = $('<div class="alert alert-info" role="alert" style="padding: 5px; margin: 10px;">Чтобы иметь возможность оценить статью, нужно зарегестрироваться!</div>')
+                        $('.like-dislike').after($loginErrorMessage)
+                        $('.like-dislike').addClass('showError')
+                    }
+                },
                 success: function(data){
-                    $('#liked').html(data.likes)
-                    $('#disliked').html(data.dislikes)
+                    if (!(+$('#disliked').html() == data.dislikes)) {
+                        $('#liked').html(data.likes)
+                        $('#disliked').html(data.dislikes)
+                    } else {
+                        if (!$('.like-dislike').hasClass('showYourReaction')) {
+                            var $loginErrorMessage = $('<div class="alert alert-success" role="alert" style="padding: 5px; margin: 10px;">Вы уже оценили данную статью, спасибо!</div>')
+                            $('.like-dislike').after($loginErrorMessage)
+                            $('.like-dislike').addClass('showYourReaction')
+                        }
+                    }
                 }
             })
         })

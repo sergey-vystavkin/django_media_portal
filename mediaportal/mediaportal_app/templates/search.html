@@ -2,11 +2,11 @@
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="container">
-    <h3 class="text-center">Регистрация нового пользователя</h3>
+    <h3 class="text-center">Что нам удалось найти</h3>
     <hr>
     <div class="row">
         <div class="col-sm-12">
-            <h3>Найденные результаты: {{ founded_articles.count }}</h3>
+            <h3>Результаты поиска: {{ founded_articles.count }}</h3>
             {% for article in founded_articles %}
             <h4><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></h4>
             <p>{{ article.content|truncatewords:30 }}</p>
